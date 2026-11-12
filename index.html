@@ -1051,6 +1051,13 @@ stage.addEventListener("click",function(e){
 });
 document.addEventListener("keydown",function(e){
   bump();if(["Shift","Control","Alt","Meta"].indexOf(e.key)<0)usingKeys=true;
+  var tag=(e.target&&e.target.tagName||"").toLowerCase();
+  var typing=tag==="input"||tag==="textarea"||tag==="select"||!!(e.target&&e.target.isContentEditable);
+  /* 1 = pengaturan kiosk, 2 = jarak foto (skip while typing in fields) */
+  if(!typing&&!e.ctrlKey&&!e.altKey&&!e.metaKey){
+    if(e.key==="1"){openAdmin();e.preventDefault();return}
+    if(e.key==="2"){openLay();e.preventDefault();return}
+  }
   if(lay.classList.contains("open")){if(e.key==="Escape")closeLay();return}
   if(admin.classList.contains("open")){if(e.key==="Escape")closeAdmin();return}
   if((e.key==="m"||e.key==="M")&&(e.ctrlKey||e.altKey)){openAdmin();e.preventDefault();return}
@@ -1106,7 +1113,7 @@ function loop(t){requestAnimationFrame(loop);if(document.hidden)return;
   if(id==="capture"&&!S.freeze&&t-lastCap>=33){lastCap=t;renderPreview(t)}
 }
 
-/* ================= admin (tap top-left, or Ctrl/Alt+M) ================= */
+/* ================= admin (tap top-left, key 1, or Ctrl/Alt+M) ================= */
 var admin=$("#admin"),hot=$("#hot");
 hot.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();openAdmin()});
 function openAdmin(){
@@ -1127,7 +1134,7 @@ $("#admSave").addEventListener("click",function(){
   $("#admMsg").textContent=saveCfg()?"Tersimpan.":"Tersimpan untuk sesi ini saja (penyimpanan perangkat tidak tersedia).";});
 $("#admDl").addEventListener("click",function(){if(!S.blob){$("#admMsg").textContent="Belum ada foto.";return}saveBlob(S.blob,"different-print-"+S.id+".jpg")});
 $("#admDl2").addEventListener("click",function(){if(!S.dlBlob){$("#admMsg").textContent="Belum ada foto.";return}saveBlob(S.dlBlob,"different-"+S.id+".jpg")});
-/* ---- "Jarak foto" panel (admin → Jarak foto, or Ctrl/Alt+L) ---- */
+/* ---- "Jarak foto" panel (admin → Jarak foto, key 2, or Ctrl/Alt+L) ---- */
 var lay=$("#lay"),layC=$("#layC"),layT="preview",laySaveT=null;
 var LAY_NOTE={preview:"Strip yang tampil di layar (pilih frame & hasil).",printL:"Strip kiri di kertas print 4x6 (garis biru = yang sedang diatur).",printR:"Strip kanan di kertas print 4x6 (garis biru = yang sedang diatur)."};
 (function(){var h="";LAY_KEYS.forEach(function(d){var a=' step="0.001" min="'+d[2]+'" max="'+d[3]+'"';

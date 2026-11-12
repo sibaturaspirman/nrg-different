@@ -35,7 +35,8 @@ CARA PAKAI
 - Desain 1080x1920, otomatis diskalakan x2 di TV 4K portrait (2160x3840). Strip hasil dibuat 1200x3600 px.
 - Kalau kamera tidak terdeteksi, aplikasi masuk DEMO MODE (wajah ilustrasi) supaya flow tetap bisa dicoba.
 
-PANEL ADMIN (tap pojok kiri atas / Ctrl+M)
+PANEL ADMIN (tap pojok kiri atas / tombol 1 / Ctrl+M)
+- Jarak foto: tombol 2 / Ctrl+L / tombol di panel admin
 - Saat result: lembar 4x6 otomatis dibuka dialog print sistem.
 - Kamera, mirror, reset otomatis, orientasi layar, layar penuh.
 - Upload endpoint + Authorization: default API IQOS (photo-ai-iims.zirolu.id).
