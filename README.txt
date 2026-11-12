@@ -38,7 +38,7 @@ CARA PAKAI
 PANEL ADMIN (tap pojok kiri atas / tombol 1 / Ctrl+M)
 - Jarak foto: tombol 2 / Ctrl+L / tombol di panel admin
 - Saat result: lembar 4x6 otomatis dibuka dialog print sistem.
-- Kamera, mirror, reset otomatis, orientasi layar, layar penuh.
+- Kamera, mirror, glow biru di sekitar orang (default OFF), reset otomatis, orientasi layar, layar penuh.
 - Upload endpoint + Authorization: default API IQOS (photo-ai-iims.zirolu.id).
   POST multipart name/phone/file (foto 9:16); response {"file":"https://..."} → URL itu jadi QR.
 - Link QR cadangan: dipakai kalau upload gagal / offline.

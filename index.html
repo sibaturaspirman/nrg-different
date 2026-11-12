@@ -318,6 +318,8 @@ body{font-family:"IQOS",system-ui,"Segoe UI",Roboto,Arial,sans-serif;color:var(-
     <p class="help">Ruangan di belakang pengunjung diganti backdrop biru polos, efek diterapkan ke orangnya saja. Butuh internet saat aplikasi dibuka.</p>
     <label><input type="checkbox" id="mirror">Mirror preview kamera (seperti cermin)</label>
     <p class="help">Foto hasil ikut di-mirror sama seperti yang dilihat pengunjung.</p>
+    <label><input type="checkbox" id="personGlow">Glow biru di sekitar orang</label>
+    <p class="help">Halo / rim light biru di tepi kepala &amp; tubuh (semua efek frame). Matikan kalau terlalu menyala.</p>
     <label for="upUrl">Upload endpoint (API IQOS)</label>
     <input id="upUrl" type="url" inputmode="url" placeholder="https://photo-ai-iims.zirolu.id/v1/iqos">
     <p class="help">POST multipart: name, phone, file (foto 9:16). Response JSON wajib punya field "file" (URL publik) → jadi isi QR.</p>
@@ -373,7 +375,7 @@ function loadCfg(){var c={};try{c=JSON.parse(localStorage.getItem(KEY)||"{}")||{
   return{layout:normLay(c.layout),cam:typeof c.cam==="string"?c.cam:"",mirror:c.mirror!==false,
     uploadUrl:typeof c.uploadUrl==="string"?c.uploadUrl:DEFAULT_UPLOAD,
     uploadAuth:typeof c.uploadAuth==="string"?c.uploadAuth:DEFAULT_AUTH,
-    qrBase:typeof c.qrBase==="string"?c.qrBase:"",removeBg:c.removeBg!==false,idle:typeof c.idle==="number"?c.idle:60,rotate:(c.rotate===90||c.rotate===270)?c.rotate:0}}
+    qrBase:typeof c.qrBase==="string"?c.qrBase:"",removeBg:c.removeBg!==false,personGlow:c.personGlow===true,idle:typeof c.idle==="number"?c.idle:60,rotate:(c.rotate===90||c.rotate===270)?c.rotate:0}}
 function saveCfg(){try{localStorage.setItem(KEY,JSON.stringify(cfg));return true}catch(e){return false}}
 var cfg=loadCfg();
 if(!cfg.uploadUrl)cfg.uploadUrl=DEFAULT_UPLOAD;
@@ -627,6 +629,7 @@ function lightWrap(g,w,h,PS,M,u,col,blur,alpha){var IW=getBuf(w,h,"wrapIn");IW.g
   IW.globalCompositeOperation="destination-in";IW.drawImage(PS,0,0);IW.globalCompositeOperation="source-over";
   g.save();g.globalCompositeOperation="screen";g.globalAlpha=alpha;g.drawImage(IW.canvas,0,0);g.restore()}
 function personGlow(g,w,h,PS,M,u){
+  if(!cfg.personGlow)return;
   rimLight(g,w,h,PS,u,"#1f6bff",24,.95);
   rimLight(g,w,h,PS,u,"#5fb4ff",7,.6);
   lightWrap(g,w,h,PS,M,u,"#2a74ff",22,.85);
@@ -1120,14 +1123,14 @@ function openAdmin(){
   var sel=$("#camSel");sel.innerHTML='<option value="">Otomatis (kamera depan / default)</option>';
   if(navigator.mediaDevices&&navigator.mediaDevices.enumerateDevices)navigator.mediaDevices.enumerateDevices().then(function(ds){
     ds.filter(function(d){return d.kind==="videoinput"}).forEach(function(d,i){var o=document.createElement("option");o.value=d.deviceId;o.textContent=d.label||("Kamera "+(i+1));if(d.deviceId===cfg.cam)o.selected=true;sel.appendChild(o)})}).catch(function(){});
-  $("#mirror").checked=cfg.mirror;$("#removeBg").checked=cfg.removeBg!==false;
+  $("#mirror").checked=cfg.mirror;$("#removeBg").checked=cfg.removeBg!==false;$("#personGlow").checked=!!cfg.personGlow;
   $("#upUrl").value=cfg.uploadUrl||DEFAULT_UPLOAD;$("#upAuth").value=cfg.uploadAuth||DEFAULT_AUTH;
   $("#qrBase").value=cfg.qrBase;$("#idle").value=cfg.idle;$("#rot").value=String(cfg.rotate||0);$("#admMsg").textContent="";
   admin.classList.add("open");try{$("#admClose").focus()}catch(e){}}
 function closeAdmin(){admin.classList.remove("open");bump()}
 $("#admClose").addEventListener("click",closeAdmin);
 $("#admSave").addEventListener("click",function(){
-  var camChanged=$("#camSel").value!==cfg.cam;cfg.cam=$("#camSel").value;cfg.mirror=$("#mirror").checked;cfg.removeBg=$("#removeBg").checked;
+  var camChanged=$("#camSel").value!==cfg.cam;cfg.cam=$("#camSel").value;cfg.mirror=$("#mirror").checked;cfg.removeBg=$("#removeBg").checked;cfg.personGlow=$("#personGlow").checked;
   cfg.uploadUrl=$("#upUrl").value.trim()||DEFAULT_UPLOAD;cfg.uploadAuth=$("#upAuth").value.trim()||DEFAULT_AUTH;cfg.qrBase=$("#qrBase").value.trim();
   var iv=parseInt($("#idle").value,10);cfg.idle=isNaN(iv)?60:Math.max(0,Math.min(600,iv));cfg.rotate=+$("#rot").value||0;fit();
   if(camChanged&&Cam.state()!=="idle")Cam.restart();
