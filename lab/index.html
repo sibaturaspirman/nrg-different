@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Filter Lab</title>
+<style>
+  :root{color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;background:#0b0f1e;color:#e6ecff;font:14px/1.4 system-ui,"Segoe UI",sans-serif}
+  header{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 16px;background:#111833;border-bottom:1px solid #26305a}
+  header h1{font-size:16px;margin:0 12px 0 0}
+  button,label.btn{font:inherit;color:#fff;background:#1f3c9e;border:1px solid #3b5bd0;border-radius:6px;padding:6px 12px;cursor:pointer}
+  #status{margin-left:auto;color:#9fb0e0;font-size:12px}
+  main{padding:16px;display:grid;gap:20px}
+  .row h2{margin:0 0 8px;font-size:15px;letter-spacing:.08em}
+  .row h2 small{font-weight:400;color:#9fb0e0;letter-spacing:0;margin-left:8px}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pair figure{margin:0}
+  .pair figcaption{font-size:12px;color:#9fb0e0;margin-top:4px}
+  canvas,.pair img{width:100%;aspect-ratio:1.2;object-fit:cover;display:block;background:#000;border:1px solid #26305a}
+  @media (max-width:700px){.pair{grid-template-columns:1fr}}
+  iframe{position:absolute;width:1080px;height:1920px;left:-99999px;top:0;border:0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Filter Lab</h1>
+  <label class="btn">Upload foto<input type="file" id="file" accept="image/*" hidden></label>
+  <button id="sample">Foto contoh</button>
+  <button id="pause">Pause animasi</button>
+  <button id="reload">Reload filter</button>
+  <span id="status">Memuat aplikasi…</span>
+</header>
+<main id="rows"></main>
+<!-- the real app, loaded hidden: the lab calls its filters through window.__pd so it always shows the current code -->
+<iframe id="app" src="../index.html" title="app" aria-hidden="true"></iframe>
+<script>
+(function(){
+  var ROWS=[{k:"facet",name:"01 FACET",ref:"ref-facet.png"},{k:"grid",name:"02 GRID",ref:"ref-grid.png"},{k:"scan",name:"03 TRACK",ref:"ref-track.png"}];
+  var W=1040,H=866,photo=null,frame=null,cut=null,paused=false,app=null,st=document.getElementById("status");
+  var rows=document.getElementById("rows");
+  ROWS.forEach(function(r){var d=document.createElement("section");d.className="row";
+    d.innerHTML='<h2>'+r.name+'<small id="ms-'+r.k+'"></small></h2><div class="pair"><figure><canvas id="c-'+r.k+'" width="'+W+'" height="'+H+'"></canvas><figcaption>Hasil filter sekarang</figcaption></figure>'+
+      '<figure><img src="'+r.ref+'" alt="Referensi '+r.name+'"><figcaption>Referensi client</figcaption></figure></div>';rows.appendChild(d)});
+  function prep(){if(!app||!photo)return;
+    frame={src:photo,w:photo.naturalWidth,h:photo.naturalHeight,live:true,photo:true,mirror:false};
+    app.vision.update(frame,true);app.vision.update(frame,true);cut=app.cutout(frame,-Math.random())}
+  function render(){if(!app||!cut)return;var t=performance.now();
+    ROWS.forEach(function(r){var c=document.getElementById("c-"+r.k),t0=performance.now();
+      try{app.fx[r.k](c.getContext("2d"),cut,W,H,t,1);document.getElementById("ms-"+r.k).textContent=(performance.now()-t0).toFixed(1)+" ms"}
+      catch(e){document.getElementById("ms-"+r.k).textContent="ERROR: "+e.message}})}
+  function loop(){if(!paused)render();setTimeout(loop,120)}
+  function load(src){var im=new Image();im.onload=function(){photo=im;prep();render()};im.src=src}
+  function attach(){var w=document.getElementById("app").contentWindow,n=0;
+    (function wait(){var pd=w.__pd;if(pd&&(pd.vision.ready()||n>60)){app=pd;st.textContent=pd.vision.ready()?"Siap · deteksi wajah aktif":"Siap · tanpa MediaPipe (fallback)";prep();render();return}
+      n++;setTimeout(wait,250)})()}
+  document.getElementById("app").addEventListener("load",function(){app=null;attach()});
+  document.getElementById("file").addEventListener("change",function(e){var f=e.target.files[0];if(f)load(URL.createObjectURL(f));e.target.value=""});
+  document.getElementById("sample").onclick=function(){load("sample.webp")};
+  document.getElementById("pause").onclick=function(){paused=!paused;this.textContent=paused?"Jalankan animasi":"Pause animasi"};
+  document.getElementById("reload").onclick=function(){st.textContent="Memuat ulang…";document.getElementById("app").src="../index.html?"+Date.now()};
+  load("sample.webp");loop();
+})();
+</script>
+</body>
+</html>
